@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Html5QrPage from "./Html5QrPage";
 import ReactZxingPage from "./ReactZxingPage";
+import FullscreenQrScannerPage from "./FullscreenQrScannerPage";
 
 export const QrApp = () => {
   return (
@@ -37,6 +38,8 @@ export const QrApp = () => {
       <Routes>
         <Route path="/" element={<Html5QrPage />} />
         <Route path="/react-zxing" element={<ReactZxingPage />} />
+        <Route path="/fullscreen-qr" element={<FullscreenQrScannerPage />} />
+
       </Routes>
     </Router>
   );
