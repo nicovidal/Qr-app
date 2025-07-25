@@ -1,33 +1,28 @@
-import { useState } from "react";
-import QRScanner from "./QRScanner";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Html5QrPage from "./Html5QrPage";
+import ReactZxingPage from "./ReactZxingPage";
 
 export const QrApp = () => {
-  const [showScanner, setShowScanner] = useState(false);
-  const [scannedText, setScannedText] = useState("")
   return (
- <div className="container py-5 text-center">
-      <h1 className="mb-4">Lector de QR</h1>
-
-      <button className="btn btn-primary mb-3" onClick={() => setShowScanner(!showScanner)}>
-        {showScanner ? "Cerrar cámara" : "Abrir cámara"}
-      </button>
-
-      {showScanner && <QRScanner onScan={setScannedText} />}
-
-      {scannedText && (
-        <div className="mt-4">
-          <p><strong>Contenido escaneado:</strong></p>
-          <p className="text-break">{scannedText}</p>
-
-          {scannedText.startsWith("http://") || scannedText.startsWith("https://") ? (
-            <a href={scannedText} className="btn btn-success mt-2" target="_blank" rel="noopener noreferrer">
-              Visitar
-            </a>
-          ) : (
-            <p className="text-muted mt-2">Este QR no es una URL válida.</p>
-          )}
+    <Router>
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+        <Link className="navbar-brand" to="/">QR App</Link>
+        <div className="collapse navbar-collapse">
+          <ul className="navbar-nav me-auto">
+            <li className="nav-item">
+              <Link className="nav-link" to="/">html5-qrcode</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/react-zxing">react-zxing</Link>
+            </li>
+          </ul>
         </div>
-      )}
-    </div>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<Html5QrPage />} />
+        <Route path="/react-zxing" element={<ReactZxingPage />} />
+      </Routes>
+    </Router>
   );
 };
