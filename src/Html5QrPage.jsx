@@ -1,33 +1,52 @@
-// src/pages/Html5QrPage.jsx
-import { useState } from "react";
-import QRScanner from "./QRScanner";
+// QRScanner.jsx
+import { useEffect, useRef } from "react";
+import { Html5Qrcode } from "html5-qrcode";
 
+const QRScanner = ({ onScan, onFinishScan }) => {
+  const qrRef = useRef(null);
 
-export default function Html5QrPage() {
-  const [showScanner, setShowScanner] = useState(false);
-  const [scannedText, setScannedText] = useState("");
+  useEffect(() => {
+    const qrRegionId = "qr-reader";
+    const html5QrCode = new Html5Qrcode(qrRegionId);
+    qrRef.current = html5QrCode;
+
+    html5QrCode
+      .start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          onScan(decodedText);
+          html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            if (onFinishScan) onFinishScan(); // 👈 informar que ya terminó
+          });
+        },
+        (errorMessage) => {
+          // puedes ignorar errores
+        }
+      )
+      .catch((err) => {
+        console.error("Error al iniciar lector QR", err);
+      });
+
+    return () => {
+      if (qrRef.current) {
+        qrRef.current
+          .stop()
+          .then(() => qrRef.current.clear())
+          .catch((err) => {
+            console.warn("No se pudo detener correctamente el escáner", err);
+          });
+      }
+    };
+  }, [onScan, onFinishScan]);
 
   return (
-    <div className="container py-5 text-center">
-      <h2 className="mb-4">Escáner con html5-qrcode</h2>
-
-      <button className="btn btn-primary mb-3" onClick={() => setShowScanner(!showScanner)}>
-        {showScanner ? "Cerrar cámara" : "Abrir cámara"}
-      </button>
-
-      {showScanner && <QRScanner onScan={setScannedText} />}
-
-      {scannedText && (
-        <div className="mt-4">
-          <p><strong>Contenido escaneado:</strong></p>
-          <p className="text-break">{scannedText}</p>
-          {scannedText.startsWith("http") && (
-            <a href={scannedText} className="btn btn-success mt-2" target="_blank" rel="noopener noreferrer">
-              Visitar
-            </a>
-          )}
-        </div>
-      )}
-    </div>
+    <div
+      id="qr-reader"
+      style={{ width: "100%", maxWidth: 350, margin: "0 auto" }}
+    ></div>
   );
-}
+};
+
+export default QRScanner;
