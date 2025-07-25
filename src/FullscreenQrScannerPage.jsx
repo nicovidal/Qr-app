@@ -20,6 +20,21 @@ export default function FullscreenQrScannerPage() {
     const html5QrCode = new Html5Qrcode(qrRegionId);
     qrRef.current = html5QrCode;
 
+    const stopScanner = () => {
+      if (isRunning.current && qrRef.current) {
+        qrRef.current
+          .stop()
+          .then(() => qrRef.current.clear())
+          .catch(() => {});
+        isRunning.current = false;
+      }
+      // Salir de pantalla completa
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+      setCameraOpen(false);
+    };
+
     html5QrCode
       .start(
         { facingMode: "environment" },
@@ -49,22 +64,6 @@ export default function FullscreenQrScannerPage() {
         console.error("Error iniciando cámara:", err);
       });
 
-    // Función para detener escáner y salir de pantalla completa
-    const stopScanner = () => {
-      if (isRunning.current && qrRef.current) {
-        qrRef.current
-          .stop()
-          .then(() => qrRef.current.clear())
-          .catch(() => {});
-        isRunning.current = false;
-      }
-      // Salir de pantalla completa
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      }
-      setCameraOpen(false);
-    };
-
     // Si el usuario sale manualmente del modo pantalla completa, detener cámara
     const onFullscreenChange = () => {
       if (!document.fullscreenElement) {
@@ -85,10 +84,13 @@ export default function FullscreenQrScannerPage() {
       <h2>Escáner QR en pantalla completa</h2>
 
       {!cameraOpen && (
-        <button className="btn btn-primary mb-3" onClick={() => {
-          setScannedText("");
-          setCameraOpen(true);
-        }}>
+        <button
+          className="btn btn-primary mb-3"
+          onClick={() => {
+            setScannedText("");
+            setCameraOpen(true);
+          }}
+        >
           Abrir cámara en pantalla completa
         </button>
       )}
@@ -103,14 +105,26 @@ export default function FullscreenQrScannerPage() {
           display: cameraOpen ? "block" : "none",
           position: "relative",
           height: "100vh",
-          backgroundColor: "#000"
+          backgroundColor: "#000",
         }}
       />
 
       {scannedText && (
         <div className="mt-4">
-          <p><strong>Contenido escaneado:</strong></p>
+          <p>
+            <strong>Contenido escaneado:</strong>
+          </p>
           <p className="text-break">{scannedText}</p>
+          {scannedText.startsWith("http") && (
+            <a
+              href={scannedText}
+              className="btn btn-success mt-2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Visitar
+            </a>
+          )}
         </div>
       )}
     </div>
