@@ -1,22 +1,25 @@
 // src/QRScanner.jsx
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 
 const QRScanner = ({ onScan }) => {
+  const qrRef = useRef(null); 
+
   useEffect(() => {
     const qrRegionId = "qr-reader";
     const html5QrCode = new Html5Qrcode(qrRegionId);
+    qrRef.current = html5QrCode;
 
     html5QrCode
       .start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
-          onScan(decodedText); // enviar texto escaneado al padre
+          onScan(decodedText);
           html5QrCode.stop().then(() => html5QrCode.clear());
         },
         (errorMessage) => {
-          // Silenciado para evitar spam de consola
+          // Ignorar errores de escaneo
         }
       )
       .catch((err) => {
@@ -24,7 +27,15 @@ const QRScanner = ({ onScan }) => {
       });
 
     return () => {
-      html5QrCode.stop().then(() => html5QrCode.clear());
+      // Detener y limpiar si aún está activo
+      if (qrRef.current) {
+        qrRef.current
+          .stop()
+          .then(() => qrRef.current.clear())
+          .catch((err) => {
+            console.warn("No se pudo detener correctamente el escáner", err);
+          });
+      }
     };
   }, [onScan]);
 
